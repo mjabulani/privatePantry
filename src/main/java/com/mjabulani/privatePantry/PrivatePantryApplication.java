@@ -10,4 +10,5 @@ public class PrivatePantryApplication {
 		SpringApplication.run(PrivatePantryApplication.class, args);
 	}
 
+
 }
