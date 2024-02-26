@@ -11,9 +11,11 @@ public class Product {
 
     private int id;
     private String name;
+    private ProductCategory category;
 
-    public Product(int id, String name) {
+    public Product(int id, String name, ProductCategory category) {
         this.id = id;
         this.name = name;
+        this.category = category;
     }
 }
