@@ -12,4 +12,11 @@ class ProductController {
         return "hello World";
     }
 
+    @GetMapping(
+            value="products/{id}",
+            produces="application/json")
+    Product getProductById() {
+        return new Product(50, "Lol");
+    }
+
 }
