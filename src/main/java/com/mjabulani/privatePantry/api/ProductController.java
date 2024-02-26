@@ -15,4 +15,11 @@ class ProductController {
         return new Product(50, "Lol", ProductCategory.CHEESE);
     }
 
+    @GetMapping(
+            value="products/categories",
+            produces="application/json")
+    ProductCategory[] getProductCategories() {
+        return ProductCategory.values();
+    }
+
 }
