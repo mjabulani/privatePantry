@@ -1,16 +1,17 @@
 package com.mjabulani.privatePantry.api;
 
 import com.mjabulani.privatePantry.model.Product;
+import com.mjabulani.privatePantry.model.ProductAddRequest;
 import com.mjabulani.privatePantry.model.ProductCategory;
 import com.mjabulani.privatePantry.model.ProductEntity;
 import com.mjabulani.privatePantry.repository.ProductRepository;
-import org.apache.tomcat.util.http.parser.HttpParser;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.Arrays;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RestController
@@ -22,6 +23,7 @@ class ProductController {
     ProductController(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
+
 
     @GetMapping(
             value="products/name",
@@ -35,17 +37,18 @@ class ProductController {
             value="products/{id}",
             produces="application/json ;charset=UTF-8")
     ProductEntity getProductById(@PathVariable int id) {
-        ProductEntity p = productRepository.findById(id).get(0);
-        return p;
+        return productRepository.findById(id).get(0);
     }
 
     @GetMapping(
             value="products",
             produces="application/json")
-    Product getProductById() {
-        return new Product(21, "Ryż", ProductCategory.CARBS, 123);
-    }
+    List<ProductEntity> getAllProducts() {
+        List<ProductEntity> products = new ArrayList<>();
+        products.addAll(productRepository.findAll());
 
+        return  products;
+    }
 
     @GetMapping(
             value="products/categories",
@@ -57,9 +60,17 @@ class ProductController {
     @PostMapping(
             value="products",
             produces="application/json")
+    ProductEntity addProduct(@RequestBody ProductAddRequest product) { ;
+        ProductEntity p = new ProductEntity(0, product.getName(), product.getCategory(), product.getAmount());
+        productRepository.save(p);
+        return p;
+    }
 
-    ProductEntity addProduct(@RequestBody Product product) { ;
-        return new ProductEntity(product.getId(), product.getName(), product.getCategory(), product.getAmount());
+    @DeleteMapping(
+            value="products/{id}",
+            produces="application/json")
+    void deleteProductById(@PathVariable int id) {
+            productRepository.deleteById(id);
     }
 }
 

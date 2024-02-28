@@ -34,5 +34,8 @@ public class ProductEntity {
         this.category = category;
         this.amount = amount;
     }
+
+    public ProductEntity(String name, ProductCategory category, int amount) {
+    }
 }
 
