@@ -24,15 +24,17 @@ class ProductController {
         this.productRepository = productRepository;
     }
 
-
+    // Get name of product by id
     @GetMapping(
-            value="products/name",
+            value="products/name/{id}",
             produces="application/json")
-    String getProductName() {
-        Product p = new Product(50, "Lol", ProductCategory.CHEESE, 5);
-        return p.getName();
+    String getProductName(@PathVariable int id) {
+        List<ProductEntity> p = productRepository.findById(id);
+        return p.get(0).getName();
+
     }
 
+    // Get product details by id
     @GetMapping(
             value="products/{id}",
             produces="application/json ;charset=UTF-8")
@@ -40,16 +42,17 @@ class ProductController {
         return productRepository.findById(id).get(0);
     }
 
+    // Get list of products
     @GetMapping(
             value="products",
             produces="application/json")
     List<ProductEntity> getAllProducts() {
         List<ProductEntity> products = new ArrayList<>();
         products.addAll(productRepository.findAll());
-
         return  products;
     }
 
+    // Get list of categories
     @GetMapping(
             value="products/categories",
             produces="application/json")
@@ -57,6 +60,7 @@ class ProductController {
         return ProductCategory.values();
     }
 
+    // Add new product to database
     @PostMapping(
             value="products",
             produces="application/json")
@@ -66,6 +70,7 @@ class ProductController {
         return p;
     }
 
+    // Delete product by id
     @DeleteMapping(
             value="products/{id}",
             produces="application/json")
