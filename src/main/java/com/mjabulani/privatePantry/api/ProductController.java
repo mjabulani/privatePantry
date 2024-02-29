@@ -1,9 +1,6 @@
 package com.mjabulani.privatePantry.api;
 
-import com.mjabulani.privatePantry.model.Product;
-import com.mjabulani.privatePantry.model.ProductAddRequest;
-import com.mjabulani.privatePantry.model.ProductCategory;
-import com.mjabulani.privatePantry.model.ProductEntity;
+import com.mjabulani.privatePantry.model.*;
 import com.mjabulani.privatePantry.repository.ProductRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.ErrorResponse;
@@ -76,6 +73,19 @@ class ProductController {
             produces="application/json")
     void deleteProductById(@PathVariable int id) {
             productRepository.deleteById(id);
+    }
+
+    @PutMapping(
+            value="products/{id}",
+            produces="application/json")
+    ProductEntity updateProduct(@PathVariable int id, @RequestBody ProductUpdate product) {
+        ProductEntity productToUpdate = productRepository.findById(id).get(0);
+        productToUpdate.setAmount(product.getAmount());
+        productToUpdate.setCategory(product.getCategory());
+        productToUpdate.setAmount(product.getAmount());
+        productRepository.save(productToUpdate);
+
+        return productToUpdate;
     }
 }
 
