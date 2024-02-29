@@ -2,10 +2,7 @@ package com.mjabulani.privatePantry.api;
 
 import com.mjabulani.privatePantry.model.*;
 import com.mjabulani.privatePantry.repository.ProductRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,10 +40,11 @@ class ProductController {
     @GetMapping(
             value="products",
             produces="application/json")
+    @CrossOrigin(origins = "*")
     List<ProductEntity> getAllProducts() {
         List<ProductEntity> products = new ArrayList<>();
         products.addAll(productRepository.findAll());
-        return  products;
+        return products;
     }
 
     // Get list of categories
