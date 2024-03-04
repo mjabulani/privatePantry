@@ -2,7 +2,12 @@ package com.mjabulani.privatePantry.api;
 
 import com.mjabulani.privatePantry.model.*;
 import com.mjabulani.privatePantry.repository.ProductRepository;
+import com.mjabulani.privatePantry.webclient.GptRequestBody;
+import com.mjabulani.privatePantry.webclient.GptResponse;
+import com.mjabulani.privatePantry.webclient.GptService;
+import com.mjabulani.privatePantry.webclient.Message;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +18,13 @@ class ProductController {
 
     private final ProductRepository productRepository;
     private ProductCategory productCategory;
+    public final GptService gptService;
+    private GptResponse gptResponse;
 
-    ProductController(ProductRepository productRepository) {
+
+    ProductController(GptService gptService, ProductRepository productRepository, GptService gptService1) {
         this.productRepository = productRepository;
+        this.gptService = gptService1;
     }
 
     // Get name of product by id
@@ -84,6 +93,23 @@ class ProductController {
         productRepository.save(productToUpdate);
 
         return productToUpdate;
+    }
+
+    @PostMapping(
+            value="products/recipe",
+            produces="application/json")
+    Mono<GptResponse> calculateRecipe() {
+        GptRequestBody requestBody = new GptRequestBody();
+        List<Message> messageList = new ArrayList<>();
+
+        messageList.add(new Message("system", "Act as a cook. You will be asked for recipes based on list of ingredients from my pantry. Please write 3 ideas for the meal."));
+        messageList.add(new Message("user", "Pasta spaghetti 300g, soya sauce 100ml, 5 eggs, bread, chicken breast 400g, salt, pepper"));
+        requestBody.setModel("gpt-3.5-turbo");
+        requestBody.setTemperature(0.4f);
+        requestBody.setMax_tokens(64);
+        requestBody.setTop_p(1);
+        requestBody.setMessageList(messageList);
+        return gptService.calculateRecipe(requestBody);
     }
 }
 
