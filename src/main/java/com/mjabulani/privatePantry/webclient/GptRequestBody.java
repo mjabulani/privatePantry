@@ -15,10 +15,10 @@ public class GptRequestBody {
     private List<Message> messages;
     private float temperature;
     private int max_tokens;
-    private int top_p;
+    private float top_p;
 
 
-    public GptRequestBody(String model, List<Message> messages, float temperature, int max_tokens, int top_p) {
+    public GptRequestBody(String model, List<Message> messages, float temperature, int max_tokens, float top_p) {
         this.model = model;
         this.messages = messages;
         this.temperature = temperature;

@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 
 @RestController
@@ -101,16 +102,35 @@ class ProductController {
     @PostMapping(
             value="products/recipe",
             produces="application/json")
-    Mono<ResponseEntity<?>> calculateRecipe() {
+    Mono<ResponseEntity<?>> calculateRecipe(@RequestBody RecipeRequestDto request) {
         GptRequestBody requestBody = new GptRequestBody();
         List<Message> messages = new ArrayList<>();
+        ArrayList<String> ingridients = new ArrayList<>();
 
-        messages.add(new Message("system", "Act as a cook. You will be asked for recipes based on list of ingredients from my pantry. Please write 3 ideas for the meal."));
-        messages.add(new Message("user", "Pasta spaghetti 300g, soya sauce 100ml, 5 eggs, bread, chicken breast 400g, salt, pepper"));
+        for (int i = 0; i < request.getItems().size(); i++) {
+            ingridients.add(request.getItems().get(i).getName() + " - " + request.getItems().get(i).getAmount());
+        }
+        StringJoiner stringJoiner = new StringJoiner(", ");
+
+        for (String ingridient : ingridients) {
+            stringJoiner.add(ingridient);
+        }
+
+        String ingridientsString = stringJoiner.toString();
+        String type;
+        if (request.isSweet()) {
+            type = "słodko";
+        } else {
+            type = "wytrawnie";
+        }
+        messages.add(new Message("system", "Zachowuj się jak szef kuchni. \n" +
+                "Podam Ci listę składników, które znajdują się w mojej spiżarni\n" +
+                "Dania mają być na " + type + ". Jeżeli składniki nie pozwalają na uzyskanie założonego smaku, napisz mi o tym i zarekomenduj co powinien dokupić."));
+        messages.add(new Message("user", ingridientsString));
         requestBody.setModel("gpt-3.5-turbo");
-        requestBody.setTemperature(0.4f);
-        requestBody.setMax_tokens(64);
-        requestBody.setTop_p(1);
+        requestBody.setTemperature(request.getSearchParameters().getTemperature());
+        requestBody.setMax_tokens(request.getSearchParameters().getMax_tokens());
+        requestBody.setTop_p(request.getSearchParameters().getTop_p());
         requestBody.setMessages(messages);
         return gptService.calculateRecipe(requestBody)
                 .map(gptResponseResponseEntity -> {
@@ -118,12 +138,12 @@ class ProductController {
                         return ResponseEntity.ok(gptResponseResponseEntity.getBody());
                     }  else {
                         return ResponseEntity.status(gptResponseResponseEntity.getStatusCode())
-                                .body("Failed to create employee");
+                                .body("Failed to call GPT engine");
                     }
                 })
                 .onErrorResume(exception -> {
                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body("Internal Cycki Error: " + exception.getMessage()));
+                            .body("Internal error: " + exception.getMessage()));
                 });
     }
 }
