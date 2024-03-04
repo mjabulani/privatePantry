@@ -6,8 +6,7 @@ import com.mjabulani.privatePantry.webclient.GptRequestBody;
 import com.mjabulani.privatePantry.webclient.GptResponse;
 import com.mjabulani.privatePantry.webclient.GptService;
 import com.mjabulani.privatePantry.webclient.Message;
-import org.apache.coyote.Response;
-import org.springframework.http.HttpStatus;
+;;;;;;import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -112,11 +111,11 @@ class ProductController {
         }
         StringJoiner stringJoiner = new StringJoiner(", ");
 
-        for (String ingridient : ingridients) {
-            stringJoiner.add(ingridient);
+        for (String ingredient : ingridients) {
+            stringJoiner.add(ingredient);
         }
 
-        String ingridientsString = stringJoiner.toString();
+        String ingredientsString = stringJoiner.toString();
         String type;
         if (request.isSweet()) {
             type = "słodko";
@@ -125,8 +124,8 @@ class ProductController {
         }
         messages.add(new Message("system", "Zachowuj się jak szef kuchni. \n" +
                 "Podam Ci listę składników, które znajdują się w mojej spiżarni\n" +
-                "Dania mają być na " + type + ". Jeżeli składniki nie pozwalają na uzyskanie założonego smaku, napisz mi o tym i zarekomenduj co powinien dokupić."));
-        messages.add(new Message("user", ingridientsString));
+                "Zaproponowane danie musi być na " + type + ". Doradź, co powinienem dokupić, by dieta zyskała właściwości prozdrowotne."));
+        messages.add(new Message("user", ingredientsString));
         requestBody.setModel("gpt-3.5-turbo");
         requestBody.setTemperature(request.getSearchParameters().getTemperature());
         requestBody.setMax_tokens(request.getSearchParameters().getMax_tokens());
