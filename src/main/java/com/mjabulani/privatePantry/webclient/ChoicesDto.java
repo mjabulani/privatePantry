@@ -1,8 +1,11 @@
 package com.mjabulani.privatePantry.webclient;
 
-import lombok.Getter;
+import lombok.*;
 
-@Getter
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChoicesDto {
 
     private int index;

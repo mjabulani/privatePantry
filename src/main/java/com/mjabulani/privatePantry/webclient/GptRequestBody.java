@@ -12,15 +12,15 @@ import java.util.List;
 public class GptRequestBody {
 
     private String model;
-    private List<Message> messageList;
+    private List<Message> messages;
     private float temperature;
     private int max_tokens;
     private int top_p;
 
 
-    public GptRequestBody(String model, List<Message> messageList, float temperature, int max_tokens, int top_p) {
+    public GptRequestBody(String model, List<Message> messages, float temperature, int max_tokens, int top_p) {
         this.model = model;
-        this.messageList = messageList;
+        this.messages = messages;
         this.temperature = temperature;
         this.max_tokens = max_tokens;
         this.top_p = top_p;

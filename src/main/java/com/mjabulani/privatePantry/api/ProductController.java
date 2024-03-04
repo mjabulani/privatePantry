@@ -6,6 +6,9 @@ import com.mjabulani.privatePantry.webclient.GptRequestBody;
 import com.mjabulani.privatePantry.webclient.GptResponse;
 import com.mjabulani.privatePantry.webclient.GptService;
 import com.mjabulani.privatePantry.webclient.Message;
+import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -98,18 +101,30 @@ class ProductController {
     @PostMapping(
             value="products/recipe",
             produces="application/json")
-    Mono<GptResponse> calculateRecipe() {
+    Mono<ResponseEntity<?>> calculateRecipe() {
         GptRequestBody requestBody = new GptRequestBody();
-        List<Message> messageList = new ArrayList<>();
+        List<Message> messages = new ArrayList<>();
 
-        messageList.add(new Message("system", "Act as a cook. You will be asked for recipes based on list of ingredients from my pantry. Please write 3 ideas for the meal."));
-        messageList.add(new Message("user", "Pasta spaghetti 300g, soya sauce 100ml, 5 eggs, bread, chicken breast 400g, salt, pepper"));
+        messages.add(new Message("system", "Act as a cook. You will be asked for recipes based on list of ingredients from my pantry. Please write 3 ideas for the meal."));
+        messages.add(new Message("user", "Pasta spaghetti 300g, soya sauce 100ml, 5 eggs, bread, chicken breast 400g, salt, pepper"));
         requestBody.setModel("gpt-3.5-turbo");
         requestBody.setTemperature(0.4f);
         requestBody.setMax_tokens(64);
         requestBody.setTop_p(1);
-        requestBody.setMessageList(messageList);
-        return gptService.calculateRecipe(requestBody);
+        requestBody.setMessages(messages);
+        return gptService.calculateRecipe(requestBody)
+                .map(gptResponseResponseEntity -> {
+                    if (gptResponseResponseEntity.getStatusCode().is2xxSuccessful()) {
+                        return ResponseEntity.ok(gptResponseResponseEntity.getBody());
+                    }  else {
+                        return ResponseEntity.status(gptResponseResponseEntity.getStatusCode())
+                                .body("Failed to create employee");
+                    }
+                })
+                .onErrorResume(exception -> {
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Internal Cycki Error: " + exception.getMessage()));
+                });
     }
 }
 
