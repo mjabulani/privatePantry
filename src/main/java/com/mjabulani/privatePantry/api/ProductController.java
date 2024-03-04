@@ -104,24 +104,9 @@ class ProductController {
     Mono<ResponseEntity<?>> calculateRecipe(@RequestBody RecipeRequestDto request) {
         GptRequestBody requestBody = new GptRequestBody();
         List<Message> messages = new ArrayList<>();
-        ArrayList<String> ingridients = new ArrayList<>();
+        String ingredientsString = getIngridients(request);
+        String type = getTypeOfRecipe(request);
 
-        for (int i = 0; i < request.getItems().size(); i++) {
-            ingridients.add(request.getItems().get(i).getName() + " - " + request.getItems().get(i).getAmount());
-        }
-        StringJoiner stringJoiner = new StringJoiner(", ");
-
-        for (String ingredient : ingridients) {
-            stringJoiner.add(ingredient);
-        }
-
-        String ingredientsString = stringJoiner.toString();
-        String type;
-        if (request.isSweet()) {
-            type = "słodko";
-        } else {
-            type = "wytrawnie";
-        }
         messages.add(new Message("system", "Zachowuj się jak szef kuchni. \n" +
                 "Podam Ci listę składników, które znajdują się w mojej spiżarni\n" +
                 "Zaproponowane danie musi być na " + type + ". Doradź, co powinienem dokupić, by dieta zyskała właściwości prozdrowotne."));
@@ -144,6 +129,27 @@ class ProductController {
                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body("Internal error: " + exception.getMessage()));
                 });
+    }
+
+    String getIngridients(RecipeRequestDto request) {
+        ArrayList<String> ingridients = new ArrayList<>();
+        for (int i = 0; i < request.getItems().size(); i++) {
+            ingridients.add(request.getItems().get(i).getName() + " - " + request.getItems().get(i).getAmount());
+        }
+        StringJoiner stringJoiner = new StringJoiner(", ");
+        for (String ingredient : ingridients) {
+            stringJoiner.add(ingredient);
+        }
+        return stringJoiner.toString();
+
+    }
+
+    String getTypeOfRecipe(RecipeRequestDto request) {
+        if (request.isSweet()) {
+            return "słodko";
+        } else {
+            return "wytrawnie";
+        }
     }
 }
 
