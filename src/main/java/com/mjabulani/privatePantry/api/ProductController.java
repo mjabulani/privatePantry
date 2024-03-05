@@ -63,6 +63,7 @@ class ProductController {
     @GetMapping(
             value="products/categories",
             produces="application/json")
+    @CrossOrigin(origins = "*")
     ProductCategory[] getProductCategories() {
         return ProductCategory.values();
     }
@@ -71,6 +72,7 @@ class ProductController {
     @PostMapping(
             value="products",
             produces="application/json")
+    @CrossOrigin(origins = "*")
     ProductEntity addProduct(@RequestBody ProductAddRequest product) { ;
         ProductEntity p = new ProductEntity(0, product.getName(), product.getCategory(), product.getAmount());
         productRepository.save(p);
@@ -81,6 +83,7 @@ class ProductController {
     @DeleteMapping(
             value="products/{id}",
             produces="application/json")
+    @CrossOrigin(origins = "*")
     void deleteProductById(@PathVariable int id) {
             productRepository.deleteById(id);
     }
@@ -88,6 +91,7 @@ class ProductController {
     @PutMapping(
             value="products/{id}",
             produces="application/json")
+    @CrossOrigin(origins = "*")
     ProductEntity updateProduct(@PathVariable int id, @RequestBody ProductUpdate product) {
         ProductEntity productToUpdate = productRepository.findById(id).get(0);
         productToUpdate.setAmount(product.getAmount());
@@ -101,6 +105,7 @@ class ProductController {
     @PostMapping(
             value="products/recipe",
             produces="application/json")
+    @CrossOrigin(origins = "*")
     Mono<ResponseEntity<?>> calculateRecipe(@RequestBody RecipeRequestDto request) {
         GptRequestBody requestBody = new GptRequestBody();
         List<Message> messages = new ArrayList<>();
@@ -109,7 +114,7 @@ class ProductController {
 
         messages.add(new Message("system", "Zachowuj się jak szef kuchni. \n" +
                 "Podam Ci listę składników, które znajdują się w mojej spiżarni\n" +
-                "Zaproponowane danie musi być na " + type + ". Doradź, co powinienem dokupić, by dieta zyskała właściwości prozdrowotne."));
+                "Zaproponowane danie musi być na " + type + ". W przepisie nie muszą być wykorzystane wszystkie składniki oraz ich cała ilość. Posiłek ma być najbardziej optymalny. Do dania użyj jedynie wskazanych produktów, innych nie dodawaj, jeżeli ich brakuje."));
         messages.add(new Message("user", ingredientsString));
         requestBody.setModel("gpt-3.5-turbo");
         requestBody.setTemperature(request.getSearchParameters().getTemperature());
