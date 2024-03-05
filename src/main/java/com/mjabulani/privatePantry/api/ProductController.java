@@ -109,7 +109,7 @@ class ProductController {
     Mono<ResponseEntity<?>> calculateRecipe(@RequestBody RecipeRequestDto request) {
         GptRequestBody requestBody = new GptRequestBody();
         List<Message> messages = new ArrayList<>();
-        String ingredientsString = getIngridients(request);
+        String ingredientsString = getIngredients(request);
         String type = getTypeOfRecipe(request);
 
         messages.add(new Message("system", "Zachowuj się jak szef kuchni. \n" +
@@ -136,13 +136,13 @@ class ProductController {
                 });
     }
 
-    String getIngridients(RecipeRequestDto request) {
-        ArrayList<String> ingridients = new ArrayList<>();
+    String getIngredients(RecipeRequestDto request) {
+        ArrayList<String> ingredients = new ArrayList<>();
         for (int i = 0; i < request.getItems().size(); i++) {
-            ingridients.add(request.getItems().get(i).getName() + " - " + request.getItems().get(i).getAmount());
+            ingredients.add(request.getItems().get(i).getName() + " - " + request.getItems().get(i).getAmount());
         }
         StringJoiner stringJoiner = new StringJoiner(", ");
-        for (String ingredient : ingridients) {
+        for (String ingredient : ingredients) {
             stringJoiner.add(ingredient);
         }
         return stringJoiner.toString();
