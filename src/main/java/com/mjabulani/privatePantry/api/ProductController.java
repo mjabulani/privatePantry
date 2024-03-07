@@ -131,7 +131,7 @@ class ProductController {
                     }
                 })
                 .onErrorResume(exception -> {
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                             .body("Internal error: " + exception.getMessage()));
                 });
     }
