@@ -1,35 +1,268 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Products</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Produktów</title>
+    <!-- Dodanie Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <script>
-      var baseurl = "http://localhost:8080/products";
-      function loadProducts(){
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("GET",baseurl,true);
-        xmlhttp.onreadystatechange = function() {
-          if(xmlhttp.readyState ===4 && xmlhttp.status ===200){
-            var products = JSON.parse(xmlhttp.responseText);
-            var tbltop = "<table><tr><th>Id</th><th>Name</th><th>Category</th><th>Amount</th></tr>";
-            //main table content we fill from data from the rest call
-            var main ="";
-            for (i = 0; i < products.length; i++){
-              main += "<tr><td>"+products[i].id+"</td><td>"+products[i].name+"</td><td>"+products[i].category+"</td><td>"+products[i].amount+"</td></tr>";
-            }
-            var tblbottom = "</table>";
-            var tbl = tbltop + main + tblbottom;
-            document.getElementById("productTable").innerHTML = tbl;
-          }
+        // Funkcja do pobierania danych z serwera GET /products
+        function pobierzProdukty() {
+            fetch('http://localhost:8080/products')
+            .then(response => response.json())
+            .then(data => {
+                utworzTabele(data);
+            })
+            .catch(error => {
+                console.error('Błąd pobierania danych:', error);
+            });
+        }
+
+        // Funkcja do tworzenia tabeli z danymi
+        function utworzTabele(dane) {
+            var tabela = document.getElementById('tabela-produktow');
+            tabela.innerHTML = '';
+            var kategorieKolor = {
+                MEAT: '#ff9999', // czerwony
+                CARBS: '#99ccff', // delikatny niebieski
+                CHEESE: '#ffff99', // delikatny żółty
+                VEGETABLE: '#99ff99', // delikatny zielony
+                PROTEIN: '#ffffff' // biały
+            };
+
+            dane.sort((a, b) => a.name.localeCompare(b.name)); // Sortowanie alfabetyczne po nazwie produktu
+
+            dane.forEach(function(produkt) {
+                var wiersz = tabela.insertRow();
+                var checkboxKomorka = wiersz.insertCell(0);
+                var idKomorka = wiersz.insertCell(1);
+                var nazwaKomorka = wiersz.insertCell(2);
+                var iloscKomorka = wiersz.insertCell(3);
+                var kategoriaKomorka = wiersz.insertCell(4);
+                var aktualizujKomorka = wiersz.insertCell(5);
+                var usunKomorka = wiersz.insertCell(6);
+
+                // Dodawanie checkboxa do zaznaczania produktów
+                var checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = JSON.stringify(produkt);
+                checkboxKomorka.appendChild(checkbox);
+
+                idKomorka.innerHTML = produkt.id;
+                nazwaKomorka.innerHTML = produkt.name;
+                iloscKomorka.innerHTML = '<input type="number" value="' + produkt.amount + '">';
+                kategoriaKomorka.innerHTML = produkt.category;
+
+                // Dodawanie przycisku do aktualizacji produktu
+                var buttonAktualizuj = document.createElement('button');
+                buttonAktualizuj.textContent = 'Aktualizuj';
+                buttonAktualizuj.className = 'btn btn-info';
+                buttonAktualizuj.onclick = function() {
+                    var nazwa = nazwaKomorka.innerHTML;
+                    var ilosc = iloscKomorka.querySelector('input').value;
+                    var kategoria = kategoriaKomorka.innerHTML;
+                    var id = idKomorka.innerHTML;
+                    aktualizujProdukt(id, nazwa, ilosc, kategoria);
+                };
+                aktualizujKomorka.appendChild(buttonAktualizuj);
+
+                // Dodawanie przycisku do usuwania produktu
+                var buttonUsun = document.createElement('button');
+                buttonUsun.textContent = 'Usuń';
+                buttonUsun.className = 'btn btn-danger';
+                buttonUsun.onclick = function() {
+                    var id = idKomorka.innerHTML;
+                    usunProdukt(id);
+                };
+                usunKomorka.appendChild(buttonUsun);
+
+                // Kolorowanie wierszy na podstawie kategorii
+                wiersz.style.backgroundColor = kategorieKolor[produkt.category];
+            });
+        }
+
+        // Funkcja do wysyłania danych zaznaczonych produktów POST /products/recipe
+        function wyslijPrzepis() {
+            var zaznaczoneProdukty = [];
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+
+            checkboxes.forEach(function(checkbox) {
+                var produkt = JSON.parse(checkbox.value);
+                zaznaczoneProdukty.push({
+                    name: produkt.name,
+                    amount: produkt.amount
+                });
+            });
+
+            var requestBody = {
+                items: zaznaczoneProdukty,
+                isSweet: false,
+                searchParameters: {
+                    temperature: 0.9,
+                    max_tokens: 500,
+                    top_p: 0.2
+                }
+            };
+
+            fetch('http://localhost:8080/products/recipe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => response.json())
+            .then(data => {
+                var responseDiv = document.getElementById('response');
+                responseDiv.innerHTML = data.choices[0].message.content;
+            })
+            .catch(error => {
+                console.error('Błąd wysyłania danych:', error);
+            });
+        }
+
+        // Funkcja do pobierania kategorii produktów
+        function pobierzKategorie() {
+            fetch('http://localhost:8080/products/categories')
+            .then(response => response.json())
+            .then(data => {
+                var kategorieSelect = document.getElementById('kategoria');
+                kategorieSelect.innerHTML = ''; // Wyczyszczenie istniejących opcji
+                data.forEach(function(kategoria) {
+                    var option = document.createElement('option');
+                    option.value = kategoria;
+                    option.textContent = kategoria;
+                    kategorieSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Błąd pobierania kategorii:', error);
+            });
+        }
+
+        // Funkcja do dodawania nowego produktu
+        function dodajProdukt() {
+            var nazwa = document.getElementById('nazwa').value;
+            var kategoria = document.getElementById('kategoria').value;
+            var ilosc = document.getElementById('ilosc').value;
+
+            var requestBody = {
+                name: nazwa,
+                category: kategoria,
+                amount: ilosc
+            };
+
+            fetch('http://localhost:8080/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Po dodaniu produktu pobierz ponownie produkty
+                pobierzProdukty();
+                // Wyczyść pola formularza po dodaniu produktu
+                document.getElementById('nazwa').value = '';
+                document.getElementById('ilosc').value = '';
+            })
+            .catch(error => {
+                console.error('Błąd dodawania produktu:', error);
+            });
+        }
+
+        // Funkcja do aktualizacji produktu
+        function aktualizujProdukt(id, nazwa, ilosc, kategoria) {
+            var requestBody = {
+                name: nazwa,
+                category: kategoria,
+                amount: ilosc
+            };
+
+            fetch(`http://localhost:8080/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Po aktualizacji produktu pobierz ponownie produkty
+                pobierzProdukty();
+            })
+            .catch(error => {
+                console.error('Błąd aktualizacji produktu:', error);
+            });
+        }
+
+        // Funkcja do usuwania produktu
+        function usunProdukt(id) {
+            fetch(`http://localhost:8080/products/${id}`, {
+                method: 'DELETE'
+            })
+            .then(() => {
+                // Po usunięciu produktu pobierz ponownie produkty
+                pobierzProdukty();
+            })
+            .catch(error => {
+                console.error('Błąd usuwania produktu:', error);
+            });
+        }
+
+        // Wywołanie funkcji pobierania danych przy ładowaniu strony
+        window.onload = function() {
+            pobierzProdukty();
+            pobierzKategorie();
         };
-        xmlhttp.send();
-      }
-      window.onload = function(){
-        loadProducts();
-      }
     </script>
 </head>
 <body>
-<div id="productTable"> </div>
+<div class="container">
+    <h1 class="mt-5">Lista Produktów</h1>
+    <table id="tabela-produktow" class="table table-striped mt-3">
+        <thead>
+        <tr>
+            <th>Wybierz</th>
+            <th>ID</th>
+            <th>Produkt</th>
+            <th>Ilość</th>
+            <th>Kategoria</th>
+            <th>Aktualizuj</th>
+            <th>Usuń</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Dane będą dodawane dynamicznie -->
+        </tbody>
+    </table>
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Dodaj nowy produkt</h2>
+            <div class="form-group">
+                <label for="nazwa">Nazwa:</label>
+                <input type="text" id="nazwa" name="nazwa" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="ilosc">Ilość:</label>
+                <input type="number" id="ilosc" name="ilosc" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="kategoria">Kategoria:</label>
+                <select id="kategoria" name="kategoria" class="form-control"></select>
+            </div>
+            <button onclick="dodajProdukt()" class="btn btn-success btn-block">Dodaj</button>
+        </div>
+        <div class="col-md-6">
+            <h2>Przepis</h2>
+            <div class="alert alert-info" role="alert" id="response">
+                Tutaj pojawi się przepis
+            </div>
+            <button onclick="wyslijPrzepis()" class="btn btn-primary btn-block">Wyślij przepis</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
