@@ -13,5 +13,7 @@ public class RecipeRequestDto {
 
     private List<RecipeItemDto> items;
     private boolean isSweet;
+    private MealType mealtype;
+    private int peopleCount;
     private SearchParametersDto searchParameters;
 }

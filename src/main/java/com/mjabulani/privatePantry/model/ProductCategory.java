@@ -2,6 +2,6 @@ package com.mjabulani.privatePantry.model;
 
 public enum  ProductCategory {
 
-    MEAT, CARBS, CHEESE, VEGETABLE, PROTEIN
+    MIĘSO, WW, TŁUSZCZ, WARZYWO, OWOC, NABIAŁ, SOS
 
 }

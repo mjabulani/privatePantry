@@ -24,18 +24,23 @@ public class ProductEntity {
     @Column(name = "amount")
     private int amount;
 
+    @Column(name = "unit")
+    @Enumerated(EnumType.STRING)
+    private ProductAmountUnit unit;
+
     public ProductEntity() {
     }
 
-    public ProductEntity(int id, String name, ProductCategory category, int amount) {
+    public ProductEntity(int id, String name, ProductCategory category, int amount, ProductAmountUnit unit) {
 
         this.id = id;
         this.name = name;
         this.category = category;
         this.amount = amount;
+        this.unit = unit;
     }
 
-    public ProductEntity(String name, ProductCategory category, int amount) {
+    public ProductEntity(String name, ProductCategory category, int amount, ProductAmountUnit unit) {
     }
 }
 

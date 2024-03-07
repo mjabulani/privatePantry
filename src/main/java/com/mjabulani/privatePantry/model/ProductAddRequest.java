@@ -11,9 +11,9 @@ public class ProductAddRequest {
 
     private String name;
     private ProductCategory category;
-    private int amount;
+    private Amount amount;
 
-    public ProductAddRequest(String name, ProductCategory category, int amount) {
+    public ProductAddRequest(String name, ProductCategory category, Amount amount) {
         this.name = name;
         this.category = category;
         this.amount = amount;
