@@ -11,10 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 
 
 @RestController
@@ -100,7 +97,7 @@ class ProductController {
             produces="application/json")
     @CrossOrigin(origins = "*")
     ProductEntity addProduct(@RequestBody ProductAddRequest product) { ;
-        ProductEntity p = new ProductEntity(UUID.randomUUID(), product.getName(), product.getCategory(), product.getAmount().getCount(), product.getAmount().getUnit());
+        ProductEntity p = new ProductEntity(0, product.getName(), product.getCategory(), product.getAmount().getCount(), product.getAmount().getUnit());
         productRepository.save(p);
         return p;
     }
