@@ -1,5 +1,6 @@
 package com.mjabulani.privatePantry.api;
 
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.mjabulani.privatePantry.model.*;
 import com.mjabulani.privatePantry.repository.ProductRepository;
 import com.mjabulani.privatePantry.webclient.GptRequestBody;
@@ -30,8 +31,8 @@ class ProductController {
 
     // Get name of product by id
     @GetMapping(
-            value="products/name/{id}",
-            produces="application/json")
+            value = "products/name/{id}",
+            produces = "application/json")
     String getProductName(@PathVariable int id) {
         List<ProductEntity> p = productRepository.findById(id);
         return p.get(0).getName();
@@ -40,12 +41,11 @@ class ProductController {
 
     // Get product details by id
     @GetMapping(
-            value="products/{id}",
-            produces="application/json ;charset=UTF-8")
-
+            value = "products/{id}",
+            produces = "application/json; charset=UTF-8")
     Product getProductById(@PathVariable int id) {
-       ProductEntity p = productRepository.findById(id).get(0);
-       Amount amount = new Amount(p.getAmount(), p.getUnit());
+        ProductEntity p = productRepository.findById(id).get(0);
+        Amount amount = new Amount(p.getAmount(), p.getUnit());
         return new Product(
                 p.getId(),
                 p.getName(),
@@ -56,36 +56,31 @@ class ProductController {
 
     // Get list of products
     @GetMapping(
-            value="products",
-            produces="application/json")
+            value = "products",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
     List<Product> getAllProducts() {
         List<Product> productList = new ArrayList<>();
-        for (int i = 1; i <= productRepository.findAll().size(); i++) {
-            ProductEntity productEntity = productRepository.findById(i).get(0);
-            Amount amount = new Amount();
-            amount.setCount(productEntity.getAmount());
-            amount.setUnit(productEntity.getUnit());
-            Product product = new Product(
-                    productEntity.getId(),
-                    productEntity.getName(),
-                    productEntity.getCategory(),
-                    amount);
-            productList.add(product);
+        List<ProductEntity> products = productRepository.findAll();
+        for (ProductEntity productEntity : products) {
+            Amount amount = new Amount(
+                    productEntity.getAmount(), productEntity.getUnit());
+
+            productList.add(
+                    Product.builder()
+                            .id(productEntity.getId())
+                            .name(productEntity.getName())
+                            .category(productEntity.getCategory())
+                            .amount(amount)
+                            .build());
         }
         return productList;
     }
 
-//    List<ProductEntity> getAllProducts() {
-//        List<ProductEntity> products = new ArrayList<>();
-//        products.addAll(productRepository.findAll());
-//        return products;
-//    }
-
     // Get list of categories
     @GetMapping(
-            value="products/categories",
-            produces="application/json")
+            value = "products/categories",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
     ProductCategory[] getProductCategories() {
         return ProductCategory.values();
@@ -93,10 +88,10 @@ class ProductController {
 
     // Add new product to database
     @PostMapping(
-            value="products",
-            produces="application/json")
+            value = "products",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
-    ProductEntity addProduct(@RequestBody ProductAddRequest product) { ;
+    ProductEntity addProduct(@RequestBody ProductAddRequest product) {
         ProductEntity p = new ProductEntity(0, product.getName(), product.getCategory(), product.getAmount().getCount(), product.getAmount().getUnit());
         productRepository.save(p);
         return p;
@@ -104,16 +99,18 @@ class ProductController {
 
     // Delete product by id
     @DeleteMapping(
-            value="products/{id}",
-            produces="application/json")
+            value = "products/{id}",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
     void deleteProductById(@PathVariable int id) {
-            productRepository.deleteById(id);
+        productRepository.deleteById(id);
     }
 
+
+    // Update product by id
     @PutMapping(
-            value="products/{id}",
-            produces="application/json")
+            value = "products/{id}",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
     Product updateProduct(@PathVariable int id, @RequestBody ProductUpdate product) {
         ProductEntity productToUpdate = productRepository.findById(id).get(0);
@@ -131,8 +128,8 @@ class ProductController {
     }
 
     @PostMapping(
-            value="products/recipe",
-            produces="application/json")
+            value = "products/recipe",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
     Mono<ResponseEntity<?>> calculateRecipe(@RequestBody RecipeRequestDto request) {
         GptRequestBody requestBody = new GptRequestBody();
@@ -141,15 +138,12 @@ class ProductController {
         String type = getTypeOfRecipe(request);
 
         messages.add(new Message("system",
-                "Zachowuj się jak kucharz domowy, który tworzy " + getTypeOfRecipe(request) + peopleCOunt(request) +
-                " korzystając tylko z dostępnych składników w lodówce i spiżarni." +
+                "Zachowuj się jak kucharz domowy, który tworzy " + getTypeOfRecipe(request) + peopleCount(request) +
+                        " korzystając tylko z dostępnych składników w lodówce i spiżarni." +
                         " Postaraj się, aby danie było pełnowartościowe i wysokobiałkowe," +
                         " ograniczając cukry oraz węglowodany proste." +
                         " Po przygotowaniu dania, podaj makroskładniki całego posiłku oraz jego kaloryczność przedstawioną jako tabelę w tagach html (<table> oraz wiersze, kolumny)"));
 
-//        messages.add(new Message("system", "Zachowuj się jak szef kuchni. \n" +
-//                "Podam Ci listę składników, które znajdują się w mojej spiżarni\n" +
-//                "Zaproponowane danie musi być na " + type + ". W przepisie nie muszą być wykorzystane wszystkie składniki oraz ich cała ilość. Posiłek ma być najbardziej optymalny. Do dania użyj jedynie wskazanych produktów, innych nie dodawaj, jeżeli ich brakuje."));
         messages.add(new Message("user", ingredientsString));
         requestBody.setModel("gpt-3.5-turbo");
         requestBody.setTemperature(request.getSearchParameters().getTemperature());
@@ -160,7 +154,7 @@ class ProductController {
                 .map(gptResponseResponseEntity -> {
                     if (gptResponseResponseEntity.getStatusCode().is2xxSuccessful()) {
                         return ResponseEntity.ok(gptResponseResponseEntity.getBody());
-                    }  else {
+                    } else {
                         return ResponseEntity.status(gptResponseResponseEntity.getStatusCode())
                                 .body("Failed to call GPT engine");
                     }
@@ -192,7 +186,7 @@ class ProductController {
         }
     }
 
-    String peopleCOunt(RecipeRequestDto request) {
+    String peopleCount(RecipeRequestDto request) {
         if (request.getPeopleCount() == 1) {
             return "jednej osoby";
         } else {

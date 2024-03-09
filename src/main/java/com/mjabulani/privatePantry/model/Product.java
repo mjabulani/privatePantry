@@ -1,13 +1,13 @@
 package com.mjabulani.privatePantry.model;
 
 import jakarta.persistence.GeneratedValue;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Value;
+import lombok.*;
 
 @Getter
 @Setter
 @Value
+@Builder
+@AllArgsConstructor
 public class Product {
 
     @GeneratedValue
@@ -17,10 +17,5 @@ public class Product {
     private ProductCategory category;
     private Amount amount;
 
-    public Product(int id, String name, ProductCategory category, Amount amount) {
-        this.id = id;
-        this.name = name;
-        this.category = category;
-        this.amount = amount;
-    }
+
 }
