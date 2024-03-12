@@ -86,6 +86,15 @@ class ProductController {
         return ProductCategory.values();
     }
 
+    // Get list of units
+    @GetMapping(
+            value = "products/units",
+            produces = "application/json")
+    @CrossOrigin(origins = "*")
+    ProductAmountUnit[] getUnits() {
+        return ProductAmountUnit.values();
+    }
+
     // Add new product to database
     @PostMapping(
             value = "products",
@@ -140,9 +149,11 @@ class ProductController {
         messages.add(new Message("system",
                 "Zachowuj się jak kucharz domowy, który tworzy " + getTypeOfRecipe(request) + peopleCount(request) +
                         " korzystając tylko z dostępnych składników w lodówce i spiżarni." +
+                        " Jeżeli nie jesteś w stanie przygotować przepisu z podanych składników, wskaż co należy dokupić, by minimalnym kosztem uzyskać dobry poziłek. " +
                         " Postaraj się, aby danie było pełnowartościowe i wysokobiałkowe," +
                         " ograniczając cukry oraz węglowodany proste." +
-                        " Po przygotowaniu dania, podaj makroskładniki całego posiłku oraz jego kaloryczność przedstawioną jako tabelę w tagach html (<table> oraz wiersze, kolumny)"));
+                        " Po przygotowaniu dania, podaj makroskładniki całego posiłku oraz jego kaloryczność." +
+                        " Całą odpowiedź przedstaw w tagach HTML, bym mógł osadzić ją na stronie internetowej w przystępnej formie. Użyj tagów html, a do określenia kaloryczności tabeli html."));
 
         messages.add(new Message("user", ingredientsString));
         requestBody.setModel("gpt-3.5-turbo");
