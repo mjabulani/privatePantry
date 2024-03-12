@@ -1,19 +1,18 @@
 package com.mjabulani.privatePantry.api;
 
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.mjabulani.privatePantry.model.*;
 import com.mjabulani.privatePantry.repository.ProductRepository;
 import com.mjabulani.privatePantry.webclient.GptRequestBody;
 import com.mjabulani.privatePantry.webclient.GptResponse;
 import com.mjabulani.privatePantry.webclient.GptService;
 import com.mjabulani.privatePantry.webclient.Message;
-;;;;;;import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 @RestController
@@ -23,17 +22,17 @@ class ProductController {
     private ProductCategory productCategory;
     public final GptService gptService;
     private GptResponse gptResponse;
+    private ProductAmountUnit productAmountUnit;
 
-
-    ProductController(GptService gptService, ProductRepository productRepository, GptService gptService1) {
+    ProductController(GptService gptService, ProductRepository productRepository) {
         this.productRepository = productRepository;
-        this.gptService = gptService1;
+        this.gptService = gptService;
     }
 
     // Get name of product by id
     @GetMapping(
-            value="products/name/{id}",
-            produces="application/json")
+            value = "products/name/{id}",
+            produces = "application/json")
     String getProductName(@PathVariable int id) {
         List<ProductEntity> p = productRepository.findById(id);
         return p.get(0).getName();
@@ -42,69 +41,104 @@ class ProductController {
 
     // Get product details by id
     @GetMapping(
-            value="products/{id}",
-            produces="application/json ;charset=UTF-8")
-    ProductEntity getProductById(@PathVariable int id) {
-        return productRepository.findById(id).get(0);
+            value = "products/{id}",
+            produces = "application/json; charset=UTF-8")
+    Product getProductById(@PathVariable int id) {
+        ProductEntity p = productRepository.findById(id).get(0);
+        Amount amount = new Amount(p.getAmount(), p.getUnit());
+        return new Product(
+                p.getId(),
+                p.getName(),
+                p.getCategory(),
+                amount);
     }
+
 
     // Get list of products
     @GetMapping(
-            value="products",
-            produces="application/json")
+            value = "products",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
-    List<ProductEntity> getAllProducts() {
-        List<ProductEntity> products = new ArrayList<>();
-        products.addAll(productRepository.findAll());
-        return products;
+    List<Product> getAllProducts() {
+        List<Product> productList = new ArrayList<>();
+        List<ProductEntity> products = productRepository.findAll();
+        for (ProductEntity productEntity : products) {
+            Amount amount = new Amount(
+                    productEntity.getAmount(), productEntity.getUnit());
+
+            productList.add(
+                    Product.builder()
+                            .id(productEntity.getId())
+                            .name(productEntity.getName())
+                            .category(productEntity.getCategory())
+                            .amount(amount)
+                            .build());
+        }
+        return productList;
     }
 
     // Get list of categories
     @GetMapping(
-            value="products/categories",
-            produces="application/json")
+            value = "products/categories",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
     ProductCategory[] getProductCategories() {
         return ProductCategory.values();
     }
 
+    // Get list of units
+    @GetMapping(
+            value = "products/units",
+            produces = "application/json")
+    @CrossOrigin(origins = "*")
+    ProductAmountUnit[] getUnits() {
+        return ProductAmountUnit.values();
+    }
+
     // Add new product to database
     @PostMapping(
-            value="products",
-            produces="application/json")
+            value = "products",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
-    ProductEntity addProduct(@RequestBody ProductAddRequest product) { ;
-        ProductEntity p = new ProductEntity(0, product.getName(), product.getCategory(), product.getAmount());
+    ProductEntity addProduct(@RequestBody ProductAddRequest product) {
+        ProductEntity p = new ProductEntity(0, product.getName(), product.getCategory(), product.getAmount().getCount(), product.getAmount().getUnit());
         productRepository.save(p);
         return p;
     }
 
     // Delete product by id
     @DeleteMapping(
-            value="products/{id}",
-            produces="application/json")
+            value = "products/{id}",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
     void deleteProductById(@PathVariable int id) {
-            productRepository.deleteById(id);
+        productRepository.deleteById(id);
     }
 
-    @PutMapping(
-            value="products/{id}",
-            produces="application/json")
-    @CrossOrigin(origins = "*")
-    ProductEntity updateProduct(@PathVariable int id, @RequestBody ProductUpdate product) {
-        ProductEntity productToUpdate = productRepository.findById(id).get(0);
-        productToUpdate.setAmount(product.getAmount());
-        productToUpdate.setCategory(product.getCategory());
-        productToUpdate.setAmount(product.getAmount());
-        productRepository.save(productToUpdate);
 
-        return productToUpdate;
+    // Update product by id
+    @PutMapping(
+            value = "products/{id}",
+            produces = "application/json")
+    @CrossOrigin(origins = "*")
+    Product updateProduct(@PathVariable int id, @RequestBody ProductUpdate product) {
+        ProductEntity productToUpdate = productRepository.findById(id).get(0);
+        productToUpdate.setName(product.getName());
+        productToUpdate.setCategory(product.getCategory());
+        productToUpdate.setAmount(product.getAmount().getCount());
+        productToUpdate.setUnit(product.getAmount().getUnit());
+        productRepository.save(productToUpdate);
+        Amount amount = new Amount(productToUpdate.getAmount(), productToUpdate.getUnit());
+        return new Product(
+                productToUpdate.getId(),
+                productToUpdate.getName(),
+                productToUpdate.getCategory(),
+                amount);
     }
 
     @PostMapping(
-            value="products/recipe",
-            produces="application/json")
+            value = "products/recipe",
+            produces = "application/json")
     @CrossOrigin(origins = "*")
     Mono<ResponseEntity<?>> calculateRecipe(@RequestBody RecipeRequestDto request) {
         GptRequestBody requestBody = new GptRequestBody();
@@ -112,9 +146,15 @@ class ProductController {
         String ingredientsString = getIngredients(request);
         String type = getTypeOfRecipe(request);
 
-        messages.add(new Message("system", "Zachowuj się jak szef kuchni. \n" +
-                "Podam Ci listę składników, które znajdują się w mojej spiżarni\n" +
-                "Zaproponowane danie musi być na " + type + ". W przepisie nie muszą być wykorzystane wszystkie składniki oraz ich cała ilość. Posiłek ma być najbardziej optymalny. Do dania użyj jedynie wskazanych produktów, innych nie dodawaj, jeżeli ich brakuje."));
+        messages.add(new Message("system",
+                "Zachowuj się jak kucharz domowy, który tworzy " + getTypeOfRecipe(request) + peopleCount(request) +
+                        " korzystając tylko z dostępnych składników w lodówce i spiżarni." +
+                        " Jeżeli nie jesteś w stanie przygotować przepisu z podanych składników, wskaż co należy dokupić, by minimalnym kosztem uzyskać dobry poziłek. " +
+                        " Postaraj się, aby danie było pełnowartościowe i wysokobiałkowe," +
+                        " ograniczając cukry oraz węglowodany proste." +
+                        " Po przygotowaniu dania, podaj makroskładniki całego posiłku oraz jego kaloryczność." +
+                        " Całą odpowiedź przedstaw w tagach HTML, bym mógł osadzić ją na stronie internetowej w przystępnej formie. Użyj tagów html, a do określenia kaloryczności tabeli html."));
+
         messages.add(new Message("user", ingredientsString));
         requestBody.setModel("gpt-3.5-turbo");
         requestBody.setTemperature(request.getSearchParameters().getTemperature());
@@ -125,13 +165,13 @@ class ProductController {
                 .map(gptResponseResponseEntity -> {
                     if (gptResponseResponseEntity.getStatusCode().is2xxSuccessful()) {
                         return ResponseEntity.ok(gptResponseResponseEntity.getBody());
-                    }  else {
+                    } else {
                         return ResponseEntity.status(gptResponseResponseEntity.getStatusCode())
                                 .body("Failed to call GPT engine");
                     }
                 })
                 .onErrorResume(exception -> {
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                             .body("Internal error: " + exception.getMessage()));
                 });
     }
@@ -139,7 +179,7 @@ class ProductController {
     String getIngredients(RecipeRequestDto request) {
         ArrayList<String> ingredients = new ArrayList<>();
         for (int i = 0; i < request.getItems().size(); i++) {
-            ingredients.add(request.getItems().get(i).getName() + " - " + request.getItems().get(i).getAmount());
+            ingredients.add(request.getItems().get(i).getName() + " - " + request.getItems().get(i).getAmount().getCount() + " " + request.getItems().get(0).getAmount().getUnit());
         }
         StringJoiner stringJoiner = new StringJoiner(", ");
         for (String ingredient : ingredients) {
@@ -151,9 +191,17 @@ class ProductController {
 
     String getTypeOfRecipe(RecipeRequestDto request) {
         if (request.isSweet()) {
-            return "słodko";
+            return "słodkie";
         } else {
-            return "wytrawnie";
+            return "wytrawne";
+        }
+    }
+
+    String peopleCount(RecipeRequestDto request) {
+        if (request.getPeopleCount() == 1) {
+            return "jednej osoby";
+        } else {
+            return request.getPeopleCount() + " osób";
         }
     }
 }

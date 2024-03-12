@@ -4,8 +4,9 @@ CREATE TABLE PRODUCTS (
     name varchar(32) not null,
     category varchar(32) not null,
     amount int not null,
+    unit varchar(32) not null,
     primary key (id)
 );
 
-insert into PRODUCTS values (1, 'Ryż', 'CARBS', 5);
+insert into PRODUCTS values (1, 'Ryż', 'WW', 100, 'GRAM');
 

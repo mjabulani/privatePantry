@@ -10,5 +10,5 @@ import lombok.*;
 public class RecipeItemDto {
 
     private String name;
-    private String amount;
+    private Amount amount;
 }
