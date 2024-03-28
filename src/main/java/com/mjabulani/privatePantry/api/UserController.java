@@ -88,4 +88,20 @@ public class UserController {
         }
     }
 
+    @PutMapping(
+            value = "users/{id}/deactivate",
+            produces = "application/json")
+    @CrossOrigin(origins = "*")
+    void deactivateUser(@PathVariable int id) throws BadRequestException {
+        if (userRepository.existsById(id)) {
+            UserEntity user = userRepository.findById(id);
+            user.setActive(false);
+            userRepository.save(user);
+
+        } else {
+            throw new BadRequestException("User does not exist");
+        }
+            }
+
+
 }
