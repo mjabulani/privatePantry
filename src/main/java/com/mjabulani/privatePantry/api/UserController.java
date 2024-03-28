@@ -4,6 +4,7 @@ import com.mjabulani.privatePantry.model.user.UserAddRequest;
 import com.mjabulani.privatePantry.model.user.UserEntity;
 import com.mjabulani.privatePantry.model.user.UserResponse;
 import com.mjabulani.privatePantry.repository.UserRepository;
+import org.apache.coyote.BadRequestException;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
@@ -17,11 +18,11 @@ import java.util.List;
 public class UserController {
 
     private final UserRepository userRepository;
-    private UserEntity userEntity;
-    private UserResponse userResponse;
+    private final UserValidator userValidator;
 
-    UserController(UserRepository userRepository) {
+    UserController(UserRepository userRepository, UserValidator userValidator) {
         this.userRepository = userRepository;
+        this.userValidator = userValidator;
 
     }
 
@@ -63,21 +64,28 @@ public class UserController {
             value = "users/add",
             produces = "application/json")
     @CrossOrigin(origins = "*")
-    UserResponse createUser(@RequestBody UserAddRequest userAddRequest) {
-        Date now = Date.valueOf(LocalDate.now());
-        UserEntity userEntity = new UserEntity(0,
-                userAddRequest.getUserName(),
-                userAddRequest.getUserPassword(),
-                now,
-                true);
-        userRepository.save(userEntity);
-        return new UserResponse(
-                userEntity.getUserId(),
-                userEntity.getUserName(),
-                now.toLocalDate(),
-                true);
+    UserResponse createUser(@RequestBody UserAddRequest userAddRequest) throws Exception {
 
+        if (userValidator.validateUserName(userAddRequest.getUserName())) {
+            if (userValidator.validateUserPassword(userAddRequest.getUserPassword())) {
+                Date now = Date.valueOf(LocalDate.now());
+                UserEntity userEntity = new UserEntity(0,
+                        userAddRequest.getUserName(),
+                        userAddRequest.getUserPassword(),
+                        now,
+                        true);
+                userRepository.save(userEntity);
+                return new UserResponse(
+                        userEntity.getUserId(),
+                        userEntity.getUserName(),
+                        now.toLocalDate(),
+                        true);
+            } else {
+                throw new BadRequestException("Invalid password. U need to use at least 8 characters and use !@#$ chars.");
+            }
+        } else {
+            throw new BadRequestException("User already exists");
+        }
     }
-
 
 }
