@@ -1,9 +1,8 @@
 package com.mjabulani.privatePantry.model.user;
 
 import jakarta.persistence.*;
-import lombok.Generated;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
 import java.sql.Date;
 
 
@@ -11,12 +10,14 @@ import java.sql.Date;
 @Setter
 @Entity
 @Table(name = "users")
+@Builder
+@AllArgsConstructor
 public class UserEntity {
 
     @Id
     @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int userId;
+    public int userId;
 
     @Column(name ="user_name")
     private String userName;
@@ -30,5 +31,8 @@ public class UserEntity {
     @Column(name = "active")
     private boolean active;
 
+    public UserEntity() {
+
+    }
 
 }
