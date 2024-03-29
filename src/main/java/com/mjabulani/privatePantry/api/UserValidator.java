@@ -29,12 +29,8 @@ public class UserValidator {
     }
 
     public boolean validateUserName(String userName) {
-
-        if (!(userRepository.findByUserName(userName).size() > 0)) {
-            return true;
-        } else {
-            return false;
-        }
+        Matcher hasSpecial = special.matcher(userName);
+        return !(userRepository.findByUserName(userName).size() > 0) && (!hasSpecial.find());
     }
 
     public boolean validateUserPassword(String userPassword) {
