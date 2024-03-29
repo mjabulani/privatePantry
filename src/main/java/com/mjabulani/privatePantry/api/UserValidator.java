@@ -21,11 +21,9 @@ public class UserValidator {
     }
 
     private static final int PASSWORD_LENGTH = 8;
-    private static final String REQUIRED_SPECIAL = "!@#$%";
-
     Pattern letter = Pattern.compile("[a-zA-z]");
     Pattern digit = Pattern.compile("[0-9]");
-    Pattern special = Pattern.compile ("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
+    Pattern special = Pattern.compile("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
 
     public UserValidator() {
     }
@@ -37,21 +35,21 @@ public class UserValidator {
         } else {
             return false;
         }
-
-
     }
 
     public boolean validateUserPassword(String userPassword) {
         if (userPassword.length() > PASSWORD_LENGTH) {
-           Matcher hasLetter = letter.matcher(userPassword);
-           Matcher hasDigit = digit.matcher(userPassword);
-           Matcher hasSpecial = special.matcher(userPassword);
+            Matcher hasLetter = letter.matcher(userPassword);
+            Matcher hasDigit = digit.matcher(userPassword);
+            Matcher hasSpecial = special.matcher(userPassword);
 
-           return hasLetter.find() && hasDigit.find() && hasSpecial.find();
+            return hasLetter.find() && hasDigit.find() && hasSpecial.find();
         } else {
             return false;
         }
     }
 
-
+    public boolean isUserActive(int userId) {
+        return userRepository.findById(userId).isActive();
+    }
 }

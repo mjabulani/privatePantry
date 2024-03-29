@@ -92,16 +92,38 @@ public class UserController {
             value = "users/{id}/deactivate",
             produces = "application/json")
     @CrossOrigin(origins = "*")
-    void deactivateUser(@PathVariable int id) throws BadRequestException {
+    String deactivateUser(@PathVariable int id) throws BadRequestException {
         if (userRepository.existsById(id)) {
             UserEntity user = userRepository.findById(id);
-            user.setActive(false);
-            userRepository.save(user);
-
+            if (!userValidator.isUserActive(id)) {
+                throw new BadRequestException(("User is already inactive!"));
+            } else {
+                user.setActive(false);
+                userRepository.save(user);
+            }
         } else {
             throw new BadRequestException("User does not exist");
         }
-            }
+        return "OK";
+    }
 
+    @PutMapping(
+            value = "users/{id}/activate",
+            produces = "application/json")
+    @CrossOrigin(origins = "*")
+    String activateUser(@PathVariable int id) throws BadRequestException {
+        if (userRepository.existsById(id)) {
+            UserEntity user = userRepository.findById(id);
+            if (userValidator.isUserActive(id)) {
+                throw new BadRequestException(("User is already active"));
+            } else {
+                user.setActive(true);
+                userRepository.save(user);
+            }
+        } else {
+            throw new BadRequestException("User does not exist");
+        }
+    return "OK";
+    }
 
 }
