@@ -1,13 +1,21 @@
 package com.mjabulani.privatePantry.model;
 
+import jakarta.persistence.GeneratedValue;
+import lombok.*;
 
+@Getter
+@Setter
+@Value
+@Builder
+@AllArgsConstructor
 public class Product {
 
-    public Product() {
-        id = 1;
-        name = "Nabiał";
-    }
+    @GeneratedValue
+    private int id;
 
-    int id;
-    String name;
+    private String name;
+    private ProductCategory category;
+    private Amount amount;
+
+
 }
