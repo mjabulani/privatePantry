@@ -8,7 +8,7 @@ CREATE TABLE PRODUCTS (
     primary key (id)
 );
 
-insert into PRODUCTS values (1, 'Ryż', 'WW', 100, 'GRAM');
+insert into PRODUCTS values (1, 'Ryż', 'CARBOHYDRATE', 100, 'GRAM');
 
 ----
 
