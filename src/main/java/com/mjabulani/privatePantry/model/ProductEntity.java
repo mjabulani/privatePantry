@@ -11,8 +11,8 @@ import lombok.Setter;
 public class ProductEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     @Column(name = "name")
     private String name;
@@ -31,7 +31,7 @@ public class ProductEntity {
     public ProductEntity() {
     }
 
-    public ProductEntity(int id, String name, ProductCategory category, int amount, ProductAmountUnit unit) {
+    public ProductEntity(String id, String name, ProductCategory category, int amount, ProductAmountUnit unit) {
 
         this.id = id;
         this.name = name;

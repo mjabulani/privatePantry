@@ -11,8 +11,7 @@ import lombok.*;
 public class Product {
 
     @GeneratedValue
-    private int id;
-
+    private String id;
     private String name;
     private ProductCategory category;
     private Amount amount;

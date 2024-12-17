@@ -1,6 +1,7 @@
 package com.mjabulani.privatePantry.api;
 
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.mjabulani.privatePantry.api.exception.ProductAlreadyExistsException;
 import com.mjabulani.privatePantry.model.*;
 import com.mjabulani.privatePantry.repository.ProductRepository;
 import com.mjabulani.privatePantry.webclient.GptRequestBody;
@@ -101,8 +102,12 @@ class ProductController {
             produces = "application/json")
     @CrossOrigin(origins = "*")
     ProductEntity addProduct(@RequestBody ProductAddRequest product) {
-        ProductEntity p = new ProductEntity(0, product.getName(), product.getCategory(), product.getAmount().getCount(), product.getAmount().getUnit());
-        productRepository.save(p);
+        ProductEntity p = new ProductEntity(UUID.randomUUID().toString(), product.getName(), product.getCategory(), product.getAmount().getCount(), product.getAmount().getUnit());
+        if (productRepository.findByName(product.getName()) == null) {
+            productRepository.save(p);
+        } else {
+            throw new ProductAlreadyExistsException(product.getName() + " już istnieje");
+        }
         return p;
     }
 
