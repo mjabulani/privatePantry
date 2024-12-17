@@ -1,12 +1,14 @@
 package com.mjabulani.privatePantry.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
+@Builder
 @Table(name = "products")
 public class ProductEntity {
 
