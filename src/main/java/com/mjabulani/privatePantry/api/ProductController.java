@@ -222,7 +222,18 @@ class ProductController {
     String getIngredients(RecipeRequestDto request) {
         ArrayList<String> ingredients = new ArrayList<>();
         for (int i = 0; i < request.getItems().size(); i++) {
-            ingredients.add(request.getItems().get(i).getName() + " - " + request.getItems().get(i).getAmount().getCount() + " " + request.getItems().get(0).getAmount().getUnit());
+            ingredients.add(request.getItems()
+                    .get(i).getName() + " - " +
+                    request
+                            .getItems()
+                            .get(i)
+                            .getAmount()
+                            .getCount() + " " +
+                    request
+                            .getItems()
+                            .get(0)
+                            .getAmount()
+                            .getUnit());
         }
         StringJoiner stringJoiner = new StringJoiner(", ");
         for (String ingredient : ingredients) {
