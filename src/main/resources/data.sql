@@ -4,7 +4,7 @@ CREATE TABLE PRODUCTS (
     id VARCHAR PRIMARY KEY,
     name VARCHAR NOT NULL,
     category VARCHAR CHECK (category IN ('MEAT', 'DAIRY', 'VEGETABLE', 'FRUIT', 'CARBOHYDRATE', 'PROTEIN', 'FATS', 'DRINKS', 'SWEETS', 'SEAFOOD', 'SPICES', 'SNACKS', 'OTHER')),
-    amount INT NOT NULL,
+    quantity INT NOT NULL,
     unit VARCHAR CHECK (unit IN ('GRAM', 'ML', 'SZT', 'OP', 'PUSZKA')) NOT NULL
 );
 

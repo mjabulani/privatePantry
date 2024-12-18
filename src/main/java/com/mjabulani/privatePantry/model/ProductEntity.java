@@ -24,7 +24,7 @@ public class ProductEntity {
     private ProductCategory category;
 
     @Column(name = "amount")
-    private int amount;
+    private int quantity;
 
     @Column(name = "unit")
     @Enumerated(EnumType.STRING)
@@ -33,12 +33,12 @@ public class ProductEntity {
     public ProductEntity() {
     }
 
-    public ProductEntity(String id, String name, ProductCategory category, int amount, ProductAmountUnit unit) {
+    public ProductEntity(String id, String name, ProductCategory category, int quantity, ProductAmountUnit unit) {
 
         this.id = id;
         this.name = name;
         this.category = category;
-        this.amount = amount;
+        this.quantity = quantity;
         this.unit = unit;
     }
 

@@ -59,7 +59,7 @@ class ProductController {
                     .name(p.getName())
                     .category(p.getCategory())
                     .amount(Amount.builder()
-                            .count(p.getAmount())
+                            .quantity(p.getAmount())
                             .unit(p.getUnit())
                             .build())
                     .build();
@@ -84,7 +84,7 @@ class ProductController {
                             .name(productEntity.getName())
                             .category(productEntity.getCategory())
                             .amount(Amount.builder()
-                                    .count(productEntity.getAmount())
+                                    .quantity(productEntity.getAmount())
                                     .unit(productEntity.getUnit())
                                     .build())
                             .build());
@@ -121,7 +121,7 @@ class ProductController {
                     .id(UUID.randomUUID().toString())
                     .name(product.getName())
                     .category(product.getCategory())
-                    .amount(product.getAmount().getCount())
+                    .amount(product.getAmount().getQuantity())
                     .unit(product.getAmount().getUnit())
                     .build());
             return Product.builder()
@@ -129,7 +129,7 @@ class ProductController {
                     .name(pe.getName())
                     .category(pe.getCategory())
                     .amount(Amount.builder()
-                            .count(pe.getAmount())
+                            .quantity(pe.getAmount())
                             .unit(pe.getUnit())
                             .build())
                     .build();
@@ -164,7 +164,7 @@ class ProductController {
             ProductEntity productToUpdate = productEntityList.get(0);
             productToUpdate.setName(product.getName());
             productToUpdate.setCategory(product.getCategory());
-            productToUpdate.setAmount(product.getAmount().getCount());
+            productToUpdate.setAmount(product.getAmount().getQuantity());
             productToUpdate.setUnit(product.getAmount().getUnit());
             productRepository.save(productToUpdate);
             Amount amount = new Amount(productToUpdate.getAmount(), productToUpdate.getUnit());
@@ -228,7 +228,7 @@ class ProductController {
                             .getItems()
                             .get(i)
                             .getAmount()
-                            .getCount() + " " +
+                            .getQuantity() + " " +
                     request
                             .getItems()
                             .get(0)

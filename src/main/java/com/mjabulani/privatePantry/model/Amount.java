@@ -9,11 +9,11 @@ import lombok.Setter;
 @Builder
 public class Amount {
 
-    private int count;
+    private int quantity;
     private ProductAmountUnit unit;
 
-    public Amount(int count, ProductAmountUnit unit) {
-        this.count = count;
+    public Amount(int quantity, ProductAmountUnit unit) {
+        this.quantity = quantity;
         this.unit = unit;
     }
 
